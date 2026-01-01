@@ -113,27 +113,27 @@ def edit_student(request,slug):
         
 
         
-        student.first_name=first_name,
-        student.last_name=last_name,
-        student.student_id=student_id,
-        student.gender = gender,
-        student.date_of_birth=date_of_birth,
-        student.student_class=student_class,
-        student.religion=religion,
-        student.joining_date=joining_date,
-        student.mobile_number=mobile_number,
-        student.admission_number=admission_number,
-        student.section=section,
-        student.student_image=student_image,
+        student.first_name=first_name
+        student.last_name=last_name
+        student.student_id=student_id
+        student.gender = gender
+        student.date_of_birth=date_of_birth
+        student.student_class=student_class
+        student.religion=religion
+        student.joining_date=joining_date
+        student.mobile_number=mobile_number
+        student.admission_number=admission_number
+        student.section=section
+        student.student_image=student_image
         student.save()
-        context = {
+        
+        
+        return redirect("student_list")
+   
+    return render(request,"students/edit-student.html", context = {
             'student': student,
             'parent': parent
-        }
-        
-        return render(request, "student_list")
-   
-    return render(request,"students/edit-student.html", context)
+        })
 
 def view_student(request, slug):
     student = get_object_or_404(Student, slug=slug)
