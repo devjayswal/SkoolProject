@@ -5,6 +5,7 @@ from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
 import uuid
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -49,7 +50,7 @@ class PasswordResetRequest(models.Model):
         return timezone.now() < self.created_at + self.TOKEN_VALIDITY_PERIOD
     
     def send_reset_email(self):
-        reset_link = f"http://localhost:8000/reset-password/{self.token}/"
+        reset_link = f"http://localhost:8000/authentication/reset-password/{self.token}/"
         send_mail(
             'Password Reset Request',
             f'Click the link to reset your password: {reset_link}',

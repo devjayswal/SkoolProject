@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404,redirect
 from .models import Student, Parent
 from django.contrib import messages
 from django.http import  HttpResponseForbidden
+from skool.views import create_notification
+from skool.models import Notification
 # Create your views here.
 
 def add_student(request):
@@ -62,6 +64,7 @@ def add_student(request):
             student_image=student_image,
             parent=parent
         )
+        create_notification(request.user, f"New student {first_name} {last_name} added.")
         messages.success(request,"Student added successfully")
         return render(request,"student-list")
 
@@ -72,8 +75,12 @@ def add_student(request):
 
 def student_list(request):
     student_list = Student.objects.select_related('parent').all()
+    unread_notifications = Notification.objects.filter(user=request.user, is_read=False)
+    unread_notifications_count = unread_notifications.count()
+
     context = {
-        'student_list': student_list
+        'student_list': student_list,
+        'unread_notifications': unread_notifications,
     }
     return render(request,"students/students.html")
 
@@ -109,10 +116,6 @@ def edit_student(request,slug):
         parent.permanent_address  = request.POST.get('permanent_address')
         parent.save()
 
-        
-        
-
-        
         student.first_name=first_name
         student.last_name=last_name
         student.student_id=student_id
@@ -128,6 +131,8 @@ def edit_student(request,slug):
         student.save()
         
         
+        messages.success(request,"Student updated successfully")
+        create_notification
         return redirect("student_list")
    
     return render(request,"students/edit-student.html", context = {
@@ -148,5 +153,7 @@ def delete_student(request, slug):
         student_name = f"{student.first_name} {student.last_name}"
         student.delete()
         
+        create_notification(request.user, f"Student {student_name} deleted.")
+        messages.success(request,"Student deleted successfully")
         return redirect("student_list")
     return HttpResponseForbidden()
