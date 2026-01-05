@@ -9,7 +9,10 @@ def index(request):
     return render(request, 'authentication/login.html' )
 
 def dashboard(request):
-    unread_notifications = Notification.objects.filter(user=request.user, is_read=False)
+    if getattr(request, 'user', None) and getattr(request.user, 'is_authenticated', False):
+        unread_notifications = Notification.objects.filter(user=request.user, is_read=False)
+    else:
+        unread_notifications = Notification.objects.none()
     unread_notifications_count = unread_notifications.count()
     context = {
         'unread_notifications': unread_notifications,
@@ -19,6 +22,8 @@ def dashboard(request):
 
 def mark_notifications_as_read(request):
     if request.method == 'POST':
+        if not getattr(request, 'user', None) or not getattr(request.user, 'is_authenticated', False):
+            return HttpResponseForbidden()
         notification  = Notification.objects.filter(user=request.user, is_read=False)
         notification.update(is_read=True)
         return JsonResponse({'status':'success'})
@@ -27,7 +32,16 @@ def mark_notifications_as_read(request):
 
 def clear_all_notifications(request):
     if request.method == 'POST':
+        if not getattr(request, 'user', None) or not getattr(request.user, 'is_authenticated', False):
+            return HttpResponseForbidden()
         notifications = Notification.objects.filter(user=request.user)
         notifications.delete()
         return JsonResponse({'status':'success'})
     return HttpResponseForbidden()
+
+
+def create_notification(user, message):
+    """Create a Notification for a given authenticated user with the provided message."""
+    if not user or not getattr(user, 'is_authenticated', False):
+        return None
+    return Notification.objects.create(user=user, message=message)

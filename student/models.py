@@ -40,7 +40,14 @@ class Student(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(f"{self.first_name}-{self.last_name}-{self.student_id}")
+            base_slug = slugify(f"{self.first_name}-{self.last_name}-{self.student_id}")
+            slug = base_slug
+            counter = 1
+            # Ensure uniqueness of slug
+            while Student.objects.filter(slug=slug).exclude(pk=getattr(self, 'pk', None)).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super(Student,self).save(*args,**kwargs)
 
     def __str__(self):

@@ -80,7 +80,7 @@
                   <div class="dropdown-menu">
                      <div class="user-header">
                         <div class="avatar avatar-sm">
-                           <img src="assets/img/profiles/avatar-01.jpg" alt="User Image" class="avatar-img rounded-circle">
+                           <img src="{% static 'assets/img/profiles/avatar-01.jpg' %}" alt="User Image" class="avatar-img rounded-circle">
                         </div>
                         <div class="user-text">
                            <h6>{{user.username}}</h6>
@@ -182,7 +182,7 @@
                         <a href="#"><i class="fas fa-shield-alt"></i> <span> Authentication </span> <span class="menu-arrow"></span></a>
                         <ul>
                            <li><a href="{% url 'login' %}">Login</a></li>
-                           <li><a href="{% url 'register' %}">Register</a></li>
+                           <li><a href="{% url 'signup' %}">Register</a></li>
                            <li><a href="{% url  'forgot-password' %}">Forgot Password</a></li>
                            <li><a href="error-404.html">Error Page</a></li>
                         </ul>

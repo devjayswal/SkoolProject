@@ -19,7 +19,7 @@ def add_student(request):
         mobile_number  = request.POST.get('mobile_number')
         admission_number  = request.POST.get('admission_number')
         section  = request.POST.get('section')
-        student_image  = request.Files.get('student_image')
+        student_image  = request.FILES.get('student_image')
 
         #parents
         father_name  = request.POST.get('father_name')
@@ -64,9 +64,10 @@ def add_student(request):
             student_image=student_image,
             parent=parent
         )
-        create_notification(request.user, f"New student {first_name} {last_name} added.")
+        if getattr(request, 'user', None) and getattr(request.user, 'is_authenticated', False):
+            create_notification(request.user, f"New student {first_name} {last_name} added.")
         messages.success(request,"Student added successfully")
-        return render(request,"student-list")
+        return redirect('student-list')
 
 
 
@@ -75,12 +76,18 @@ def add_student(request):
 
 def student_list(request):
     student_list = Student.objects.select_related('parent').all()
-    unread_notifications = Notification.objects.filter(user=request.user, is_read=False)
+    student_count = student_list.count()
+    if getattr(request, 'user', None) and getattr(request.user, 'is_authenticated', False):
+        unread_notifications = Notification.objects.filter(user=request.user, is_read=False)
+    else:
+        unread_notifications = Notification.objects.none()
     unread_notifications_count = unread_notifications.count()
 
     context = {
         'student_list': student_list,
+        'student_count': student_count,
         'unread_notifications': unread_notifications,
+        'unread_notifications_count': unread_notifications_count,
     }
     return render(request,"students/students.html")
 
@@ -99,7 +106,7 @@ def edit_student(request,slug):
         mobile_number  = request.POST.get('mobile_number')
         admission_number  = request.POST.get('admission_number')
         section  = request.POST.get('section')
-        student_image  = request.Files.get('student_image')
+        student_image  = request.FILES.get('student_image')
 
         #parents
         parent.father_name  = request.POST.get('father_name')
@@ -132,8 +139,9 @@ def edit_student(request,slug):
         
         
         messages.success(request,"Student updated successfully")
-        create_notification
-        return redirect("student_list")
+        if getattr(request, 'user', None) and getattr(request.user, 'is_authenticated', False):
+            create_notification(request.user, f"Student {student.first_name} {student.last_name} updated.")
+        return redirect('student-list')
    
     return render(request,"students/edit-student.html", context = {
             'student': student,
@@ -145,15 +153,15 @@ def view_student(request, slug):
     context  = {
         'student': student
     }
-    return render(request,"students/student-detials.html")
+    return render(request, "students/student-details.html", context)
 
 def delete_student(request, slug):
     if request.method == "POST":
         student = get_object_or_404(Student, slug=slug)
         student_name = f"{student.first_name} {student.last_name}"
         student.delete()
-        
-        create_notification(request.user, f"Student {student_name} deleted.")
+        if getattr(request, 'user', None) and getattr(request.user, 'is_authenticated', False):
+            create_notification(request.user, f"Student {student_name} deleted.")
         messages.success(request,"Student deleted successfully")
-        return redirect("student_list")
+        return redirect('student-list')
     return HttpResponseForbidden()
